@@ -1,110 +1,50 @@
-import csv
+import json
 import os
+import stat
 
-FILE_NAME = "expenses.csv"
+DATA_FILE = "data/expenses.json"
 
+def secure_init():
+    """Ensure data directory exists with restricted permissions."""
+    if not os.path.exists("data"):
+        os.makedirs("data", mode=0o700)
+    if not os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "w") as f:
+            json.dump([], f)
+        os.chmod(DATA_FILE, stat.S_IRUSR | stat.S_IWUSR)
 
-def load_expenses():
-    expenses = []
+def sanitize_input(user_input):
+    """Basic sanitization to prevent injection."""
+    return str(user_input).replace("<", "").replace(">", "").strip()
 
-    if os.path.exists(FILE_NAME):
-        with open(FILE_NAME, "r", newline="") as file:
-            reader = csv.DictReader(file)
+def save_data(data):
+    """Atomic write to prevent data corruption."""
+    temp_file = f"{DATA_FILE}.tmp"
+    with open(temp_file, "w") as f:
+        json.dump(data, f, indent=4)
+    os.replace(temp_file, DATA_FILE)
 
-            for row in reader:
-                expenses.append(row)
-
-    return expenses
-
-
-def save_expenses(expenses):
-    with open(FILE_NAME, "w", newline="") as file:
-        fieldnames = ["name", "amount", "category"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-        writer.writeheader()
-        writer.writerows(expenses)
-
-
-def add_expense(expenses):
-    name = input("Enter expense name: ")
-
-    while True:
-        try:
-            amount = float(input("Enter amount: "))
-
-            if amount <= 0:
-                print("Amount must be greater than 0.")
-                continue
-
-            break
-
-        except ValueError:
-            print("Please enter a valid number.")
-
-    category = input("Enter category: ")
-
-    expense = {
-        "name": name,
-        "amount": str(amount),
-        "category": category
-    }
-
-    expenses.append(expense)
-    save_expenses(expenses)
-
-    print("Expense added successfully!")
-
-
-def view_expenses(expenses):
-    if not expenses:
-        print("\nNo expenses recorded.")
+def add_expense(amount, category, description):
+    try:
+        amount = float(amount)
+        if amount <= 0: raise ValueError
+    except ValueError:
+        print("Error: Invalid amount.")
         return
 
-    print("\n--- Your Expenses ---")
+    # Sanitize strings
+    category = sanitize_input(category)[:50] # Length limit
+    description = sanitize_input(description)[:200]
 
-    for number, expense in enumerate(expenses, start=1):
-        print(
-            f"{number}. {expense['name']} - "
-            f"{float(expense['amount']):.2f} - "
-            f"{expense['category']}"
-        )
-
-
-def show_total(expenses):
-    total = sum(float(expense["amount"]) for expense in expenses)
-
-    print(f"\nTotal spending: {total:.2f}")
-
-
-def main():
-    expenses = load_expenses()
-
-    while True:
-        print("\n--- Expense Tracker ---")
-        print("1. Add expense")
-        print("2. View expenses")
-        print("3. Show total spending")
-        print("4. Exit")
-
-        choice = input("Choose an option: ")
-
-        if choice == "1":
-            add_expense(expenses)
-
-        elif choice == "2":
-            view_expenses(expenses)
-
-        elif choice == "3":
-            show_total(expenses)
-
-        elif choice == "4":
-            print("Goodbye!")
-            break
-
-        else:
-            print("Invalid option. Please choose 1-4.")
-
-
-if __name__ == "__main__":
-    main()
+    expenses = load_data()
+    # Use a simple unique ID generator
+    new_id = max([e['id'] for e in expenses], default=0) + 1
+    
+    expenses.append({
+        "id": new_id,
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "amount": amount,
+        "category": category,
+        "description": description
+    })
+    save_data(expenses)
