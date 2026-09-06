@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime
 
+CURRENCY_SYMBOL = "KSh"
+
 DATA_DIR = "data"
 DATA_FILE = os.path.join(DATA_DIR, "expenses.json")
 
@@ -92,7 +94,7 @@ def view_expenses():
             f"{expense['date']} | "
             f"{expense['category']} | "
             f"{expense['description']} | "
-            f"${expense['amount']:.2f}"
+            f"{CURRENCY_SYMBOL} {expense['amount']:.2f}"
         )
 
 
@@ -102,7 +104,7 @@ def show_total():
 
     total = sum(expense["amount"] for expense in expenses)
 
-    print(f"\nTotal spending: ${total:.2f}")
+    print(f"\nTotal spending: {CURRENCY_SYMBOL} {total:.2f}")
 def category_summary():
     """Display total spending for each category."""
     expenses = load_data()
@@ -120,7 +122,7 @@ def category_summary():
     print("\n--- SPENDING BY CATEGORY ---")
 
     for category, total in sorted(totals.items()):
-        print(f"{category}: ${total:.2f}")
+        print(f"{category}: {CURRENCY_SYMBOL} {total:.2f}")
 
 def delete_expense():
     """Delete an expense by ID."""
