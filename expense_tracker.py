@@ -103,7 +103,24 @@ def show_total():
     total = sum(expense["amount"] for expense in expenses)
 
     print(f"\nTotal spending: ${total:.2f}")
+def category_summary():
+    """Display total spending for each category."""
+    expenses = load_data()
 
+    if not expenses:
+        print("No expenses recorded.")
+        return
+
+    totals = {}
+
+    for expense in expenses:
+        category = expense["category"]
+        totals[category] = totals.get(category, 0) + expense["amount"]
+
+    print("\n--- SPENDING BY CATEGORY ---")
+
+    for category, total in sorted(totals.items()):
+        print(f"{category}: ${total:.2f}")
 
 def delete_expense():
     """Delete an expense by ID."""
@@ -142,7 +159,11 @@ def main():
         print("2. View expenses")
         print("3. Show total spending")
         print("4. Delete expense")
-        print("5. Exit")
+        print("5. Spending by category")
+        print("6. Exit")
+        
+     
+    
 
         choice = input("Choose an option: ").strip()
 
@@ -155,8 +176,12 @@ def main():
         elif choice == "4":
             delete_expense()
         elif choice == "5":
-            print("Goodbye!")
-            break
+             category_summary()
+        elif choice == "6":
+              print("Goodbye!")
+              break
+            
+            
         else:
             print("Invalid choice. Please select 1-5.")
 
