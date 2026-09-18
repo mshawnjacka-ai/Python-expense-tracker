@@ -26,6 +26,7 @@ A command-line expense tracker built with Python for recording, managing, and an
 
 ```bash
 git clone https://github.com/mshawnjacka-ai/Python-expense-tracker.git
+cd Python-expense-tracker
 
-
+python expense_tracker.py```
 
