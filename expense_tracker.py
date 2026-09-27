@@ -60,7 +60,7 @@ def add_expense():
         break
     print("Category cannot be empty.")
 
-while True:
+    while True:
     description = sanitize_input(input("Enter description: "), 200)
     if description:
         break
