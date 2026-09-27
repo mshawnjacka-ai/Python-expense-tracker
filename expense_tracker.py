@@ -54,8 +54,18 @@ def add_expense():
         print("Invalid amount.")
         return
 
+    while True:
     category = sanitize_input(input("Enter category: "), 50)
+    if category:
+        break
+    print("Category cannot be empty.")
+
+while True:
     description = sanitize_input(input("Enter description: "), 200)
+    if description:
+        break
+    print("Description cannot be empty.")
+  
 
     expenses = load_data()
 
